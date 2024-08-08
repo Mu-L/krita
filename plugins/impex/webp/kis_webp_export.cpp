@@ -300,6 +300,12 @@ KisImportExportErrorCode KisWebPExport::convert(KisDocument *document, QIODevice
                         const KisPaintDeviceSP src = dev;
                         const KoID depthId = src->colorSpace()->colorDepthId();
                         const KoColorSpace *destCs = KoColorSpaceRegistry::instance()->rgb8();
+                        if (cs->colorModelId() == RGBAColorModelID) {
+                            // Preserve color profile if model is RGB
+                            destCs = KoColorSpaceRegistry::instance()->colorSpace(RGBAColorModelID.id(),
+                                                                                  Integer8BitsColorDepthID.id(),
+                                                                                  src->colorSpace()->profile());
+                        }
                         const KoColorSpace *mixCs = KoColorSpaceRegistry::instance()->colorSpace(RGBAColorModelID.id(),
                                                                                                  depthId.id(),
                                                                                                  destCs->profile());
@@ -340,7 +346,7 @@ KisImportExportErrorCode KisWebPExport::convert(KisDocument *document, QIODevice
 
                     // Convert to sRGB for non-RGBA color model
                     const KoColorProfile *imageProfile = (dst->colorSpace()->colorModelId() == RGBAColorModelID)
-                        ? dev->colorSpace()->profile()
+                        ? dst->colorSpace()->profile()
                         : nullptr;
 
                     const QImage imageOut = dst->convertToQImage(imageProfile, 0, 0, bounds.width(), bounds.height())
@@ -416,6 +422,12 @@ KisImportExportErrorCode KisWebPExport::convert(KisDocument *document, QIODevice
                     const KisPaintDeviceSP src = document->savingImage()->projection();
                     const KoID depthId = src->colorSpace()->colorDepthId();
                     const KoColorSpace *destCs = KoColorSpaceRegistry::instance()->rgb8();
+                    if (cs->colorModelId() == RGBAColorModelID) {
+                        // Preserve color profile if model is RGB
+                        destCs = KoColorSpaceRegistry::instance()->colorSpace(RGBAColorModelID.id(),
+                                                                              Integer8BitsColorDepthID.id(),
+                                                                              src->colorSpace()->profile());
+                    }
                     const KoColorSpace *mixCs = KoColorSpaceRegistry::instance()->colorSpace(RGBAColorModelID.id(),
                                                                                              depthId.id(),
                                                                                              destCs->profile());
@@ -456,7 +468,7 @@ KisImportExportErrorCode KisWebPExport::convert(KisDocument *document, QIODevice
 
                 // Convert to sRGB for non-RGBA color model
                 const KoColorProfile *imageProfile = (dst->colorSpace()->colorModelId() == RGBAColorModelID)
-                    ? document->savingImage()->projection()->colorSpace()->profile()
+                    ? dst->colorSpace()->profile()
                     : nullptr;
 
                 const QImage imageOut = dst->convertToQImage(imageProfile, 0, 0, bounds.width(), bounds.height())
